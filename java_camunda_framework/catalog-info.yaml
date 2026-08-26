@@ -1,0 +1,73 @@
+apiVersion: backstage.io/v1alpha1
+kind: Library
+metadata:
+  name: java-camunda-framework
+  title: Java Camunda Framework
+  description: |
+    Reusable Spring Boot starter libraries (L1–L4) for any Camunda/Zeebe-backed
+    Java service. Add individual starters as Maven dependencies.
+  annotations:
+    github.com/project-slug: greyorange/java_camunda_framework
+    backstage.io/techdocs-ref: dir:.
+  tags: [java, spring-boot, camunda, zeebe, library, jpa]
+spec:
+  type: library
+  lifecycle: production
+  owner: group:platform
+  system: butler-server
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: camunda-l1-java
+  title: "L1: JPA Entity Base (Java)"
+  description: WorkflowEntityBase + WorkflowStatus — extend for your domain entity
+  tags: [java, jpa, l1-data]
+spec:
+  type: library
+  lifecycle: production
+  owner: group:platform
+  system: butler-server
+  subcomponentOf: java-camunda-framework
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: camunda-l2-java
+  title: "L2: Saga/Integrity (Java)"
+  description: WorkflowSagaBase — @Transactional + afterCommit Kafka publish
+  tags: [java, kafka, transactional, l2-integrity]
+spec:
+  type: library
+  lifecycle: production
+  owner: group:platform
+  system: butler-server
+  subcomponentOf: java-camunda-framework
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: camunda-l3-java
+  title: "L3: Zeebe Workers (Java)"
+  description: AbstractJobWorker + KafkaToZeebeMessageBridge
+  tags: [java, zeebe, camunda, l3-orchestration]
+spec:
+  type: library
+  lifecycle: production
+  owner: group:platform
+  system: butler-server
+  subcomponentOf: java-camunda-framework
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: camunda-l4-java
+  title: "L4: Screen Template (Java)"
+  description: ScreenTemplateBase — WebSocket ui_template push for operator screens
+  tags: [java, websocket, stomp, l4-template]
+spec:
+  type: library
+  lifecycle: production
+  owner: group:platform
+  system: butler-server
+  subcomponentOf: java-camunda-framework

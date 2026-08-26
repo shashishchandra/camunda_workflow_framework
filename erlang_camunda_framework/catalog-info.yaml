@@ -1,0 +1,73 @@
+apiVersion: backstage.io/v1alpha1
+kind: Library
+metadata:
+  name: erlang-camunda-framework
+  title: Erlang Camunda Framework
+  description: |
+    Reusable Erlang OTP library layers (L1–L4) for any Camunda/Zeebe-backed
+    service in butler_server. Add individual layers as rebar3 deps.
+  annotations:
+    github.com/project-slug: greyorange/erlang_camunda_framework
+    backstage.io/techdocs-ref: dir:.
+  tags: [erlang, camunda, zeebe, library, mnesia, gen_saga]
+spec:
+  type: library
+  lifecycle: production
+  owner: group:platform
+  system: butler-server
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: camunda-l1-erlang
+  title: "L1: Mnesia Accessor (Erlang)"
+  description: camunda_l1_db behaviour + migration runner for Mnesia-backed services
+  tags: [erlang, mnesia, l1-data]
+spec:
+  type: library
+  lifecycle: production
+  owner: group:platform
+  system: butler-server
+  subcomponentOf: erlang-camunda-framework
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: camunda-l2-erlang
+  title: "L2: Saga/Integrity (Erlang)"
+  description: gen_saga:promise wrapper — transactional write + afterCommit Kafka publish
+  tags: [erlang, gen_saga, kafka, l2-integrity]
+spec:
+  type: library
+  lifecycle: production
+  owner: group:platform
+  system: butler-server
+  subcomponentOf: erlang-camunda-framework
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: camunda-l3-erlang
+  title: "L3: Zeebe Workers (Erlang)"
+  description: camunda_l3_worker behaviour + Kafka→Zeebe message bridge
+  tags: [erlang, zeebe, camunda, l3-orchestration]
+spec:
+  type: library
+  lifecycle: production
+  owner: group:platform
+  system: butler-server
+  subcomponentOf: erlang-camunda-framework
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: camunda-l4-erlang
+  title: "L4: Cowboy Handler (Erlang)"
+  description: 3-layer Cowboy REST behaviour — routing, delegation, serialisation
+  tags: [erlang, cowboy, rest, l4-template]
+spec:
+  type: library
+  lifecycle: production
+  owner: group:platform
+  system: butler-server
+  subcomponentOf: erlang-camunda-framework
