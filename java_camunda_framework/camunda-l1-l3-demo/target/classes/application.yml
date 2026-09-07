@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: camunda-l2-demo
+  datasource:
+    url: jdbc:h2:mem:demo;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    open-in-view: false
+
+# Point this at your locally running Zeebe gateway.
+# Camunda Desktop Modeler's "Camunda 8 Run" bundle and most local docker-compose
+# setups default the gRPC gateway to localhost:26500 — override with
+# ZEEBE_GATEWAY_ADDRESS if yours differs.
+zeebe:
+  client:
+    broker:
+      gateway-address: ${ZEEBE_GATEWAY_ADDRESS:localhost:26500}
+    security:
+      plaintext: true
+
+logging:
+  pattern:
+    console: "%d{HH:mm:ss} %-5level [wf=%X{workflowId}] [step=%X{step}] %logger{25} - %msg%n"

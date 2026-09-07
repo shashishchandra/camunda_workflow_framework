@@ -4,7 +4,7 @@ metadata:
   name: java-camunda-framework
   title: Java Camunda Framework
   description: |
-    Reusable Spring Boot starter libraries (L1–L4) for any Camunda/Zeebe-backed
+    Reusable Spring Boot starter libraries (L1-L4) for any Camunda/Zeebe-backed
     Java service. Add individual starters as Maven dependencies.
   annotations:
     github.com/project-slug: greyorange/java_camunda_framework

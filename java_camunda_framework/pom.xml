@@ -14,12 +14,16 @@
         <module>camunda-l1-starter</module>
         <module>camunda-l2-starter</module>
         <module>camunda-l3-starter</module>
-        <module>camunda-l4-starter</module>
-        <module>example</module>
+        <!-- camunda-l4-starter and example are not yet buildable Maven modules
+             (no pom.xml of their own — L4/L5 are still in design, not implemented;
+             see the L4/L5 slide). Re-add here once they get a pom.xml. -->
+        <module>camunda-l1-l3-demo</module>
     </modules>
 
     <properties>
         <java.version>17</java.version>
+        <maven.compiler.release>17</maven.compiler.release>
+        <maven.compiler.parameters>true</maven.compiler.parameters>
         <spring-boot.version>3.2.0</spring-boot.version>
         <zeebe.version>8.4.0</zeebe.version>
         <kafka.version>3.6.0</kafka.version>

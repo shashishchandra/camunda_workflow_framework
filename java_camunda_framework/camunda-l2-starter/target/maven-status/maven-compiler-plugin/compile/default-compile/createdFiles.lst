@@ -1,0 +1,10 @@
+com/greyorange/camunda/l2/WorkflowCheckpoint.class
+com/greyorange/camunda/l2/WorkflowSagaBase$2.class
+com/greyorange/camunda/l2/WorkflowSagaBase$SagaCommit.class
+com/greyorange/camunda/l2/WorkflowMq.class
+com/greyorange/camunda/l2/WorkflowRuleEngine.class
+com/greyorange/camunda/l2/WorkflowRule.class
+com/greyorange/camunda/l2/RuleViolationException.class
+com/greyorange/camunda/l2/WorkflowSagaBase$1.class
+com/greyorange/camunda/l2/WorkflowSagaBase.class
+com/greyorange/camunda/l2/WorkflowRule$1.class
