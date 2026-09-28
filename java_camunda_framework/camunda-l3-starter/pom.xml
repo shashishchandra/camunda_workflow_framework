@@ -31,8 +31,18 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <!-- provided, not compile: only AbstractJobWorker/KafkaToZeebeMessageBridge
+                 (the old, unused-by-this-demo pattern) need this at compile time. Left as
+                 default (transitive) scope, it leaks into any consumer's runtime classpath
+                 and its own Spring auto-configuration clashes with
+                 spring-boot-starter-camunda-connectors's actuator config (both register a
+                 bean named micrometerMetricsRecorder), which is exactly what broke
+                 camunda-pick-vanilla-demo's startup the moment it started depending on this
+                 module. A consumer that actually wants AbstractJobWorker/
+                 KafkaToZeebeMessageBridge must add its own spring-zeebe-starter dependency. -->
             <groupId>io.camunda</groupId>
             <artifactId>spring-zeebe-starter</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <!-- @Operation/@OutboundConnector/@InboundConnector/InboundConnectorExecutable
