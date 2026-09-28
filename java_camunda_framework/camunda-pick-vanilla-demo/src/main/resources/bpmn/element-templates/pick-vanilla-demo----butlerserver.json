@@ -1,0 +1,342 @@
+{
+  "$schema" : "https://unpkg.com/@camunda/zeebe-element-templates-json-schema/resources/schema.json",
+  "name" : "Pick Vanilla Demo -- butler_server",
+  "id" : "io.greyorange.pickvanillademo.ButlerServer.v1",
+  "description" : "Read-only calls into butler_server's pick_vanilla_demo_http_handler, one operation per pick-front vanilla HSM node. Never writes.",
+  "metadata" : {
+    "keywords" : [ ]
+  },
+  "version" : 1,
+  "category" : {
+    "id" : "connectors",
+    "name" : "Connectors"
+  },
+  "appliesTo" : [ "bpmn:Task" ],
+  "elementType" : {
+    "value" : "bpmn:ServiceTask"
+  },
+  "groups" : [ {
+    "id" : "operation",
+    "label" : "Operation"
+  }, {
+    "id" : "connector",
+    "label" : "Connector"
+  }, {
+    "id" : "output",
+    "label" : "Output mapping"
+  }, {
+    "id" : "error",
+    "label" : "Error handling"
+  }, {
+    "id" : "retries",
+    "label" : "Retries"
+  } ],
+  "properties" : [ {
+    "value" : "io.greyorange.pickvanillademo:butler-server:1",
+    "binding" : {
+      "property" : "type",
+      "type" : "zeebe:taskDefinition"
+    },
+    "type" : "Hidden"
+  }, {
+    "id" : "operation",
+    "label" : "Operation",
+    "description" : "The operation to execute",
+    "value" : "auto_dest_clear",
+    "group" : "operation",
+    "binding" : {
+      "key" : "operation",
+      "type" : "zeebe:taskHeader"
+    },
+    "type" : "Dropdown",
+    "choices" : [ {
+      "name" : "Auto Dest Clear (log only)",
+      "value" : "auto_dest_clear"
+    }, {
+      "name" : "Commit PPTL Press (log only)",
+      "value" : "commit_pptl_press"
+    }, {
+      "name" : "Has Clearable Front Bin",
+      "value" : "has_clearable_front_bin"
+    }, {
+      "name" : "Is Front Tote Flow",
+      "value" : "is_front_tote_flow"
+    }, {
+      "name" : "Pick Prerequisites",
+      "value" : "is_destination_orchestrated_by_htm"
+    }, {
+      "name" : "Picklist Processing",
+      "value" : "is_pick_possible"
+    }, {
+      "name" : "Rack Released (log only)",
+      "value" : "rack_released"
+    }, {
+      "name" : "Wait For Print",
+      "value" : "print_awaited"
+    } ]
+  }, {
+    "id" : "auto_dest_clear:pps_id",
+    "label" : "Pps_id",
+    "feel" : "optional",
+    "group" : "operation",
+    "binding" : {
+      "name" : "pps_id",
+      "type" : "zeebe:input"
+    },
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "auto_dest_clear",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "String"
+  }, {
+    "id" : "auto_dest_clear:bin_id",
+    "label" : "Bin_id",
+    "feel" : "optional",
+    "group" : "operation",
+    "binding" : {
+      "name" : "bin_id",
+      "type" : "zeebe:input"
+    },
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "auto_dest_clear",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "String"
+  }, {
+    "id" : "commit_pptl_press:pps_id",
+    "label" : "Pps_id",
+    "feel" : "optional",
+    "group" : "operation",
+    "binding" : {
+      "name" : "pps_id",
+      "type" : "zeebe:input"
+    },
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "commit_pptl_press",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "String"
+  }, {
+    "id" : "commit_pptl_press:bin_id",
+    "label" : "Bin_id",
+    "feel" : "optional",
+    "group" : "operation",
+    "binding" : {
+      "name" : "bin_id",
+      "type" : "zeebe:input"
+    },
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "commit_pptl_press",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "String"
+  }, {
+    "id" : "has_clearable_front_bin:pps_id",
+    "label" : "Pps_id",
+    "feel" : "optional",
+    "group" : "operation",
+    "binding" : {
+      "name" : "pps_id",
+      "type" : "zeebe:input"
+    },
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "has_clearable_front_bin",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "String"
+  }, {
+    "id" : "is_front_tote_flow:pps_id",
+    "label" : "Pps_id",
+    "feel" : "optional",
+    "group" : "operation",
+    "binding" : {
+      "name" : "pps_id",
+      "type" : "zeebe:input"
+    },
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "is_front_tote_flow",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "String"
+  }, {
+    "id" : "is_destination_orchestrated_by_htm:pps_id",
+    "label" : "Pps_id",
+    "feel" : "optional",
+    "group" : "operation",
+    "binding" : {
+      "name" : "pps_id",
+      "type" : "zeebe:input"
+    },
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "is_destination_orchestrated_by_htm",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "String"
+  }, {
+    "id" : "is_pick_possible:pps_id",
+    "label" : "Pps_id",
+    "feel" : "optional",
+    "group" : "operation",
+    "binding" : {
+      "name" : "pps_id",
+      "type" : "zeebe:input"
+    },
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "is_pick_possible",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "String"
+  }, {
+    "id" : "is_pick_possible:pick_list",
+    "label" : "Pick_list",
+    "feel" : "required",
+    "group" : "operation",
+    "binding" : {
+      "name" : "pick_list",
+      "type" : "zeebe:input"
+    },
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "is_pick_possible",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "String"
+  }, {
+    "id" : "rack_released:pps_id",
+    "label" : "Pps_id",
+    "feel" : "optional",
+    "group" : "operation",
+    "binding" : {
+      "name" : "pps_id",
+      "type" : "zeebe:input"
+    },
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "rack_released",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "String"
+  }, {
+    "id" : "print_awaited:pps_id",
+    "label" : "Pps_id",
+    "feel" : "optional",
+    "group" : "operation",
+    "binding" : {
+      "name" : "pps_id",
+      "type" : "zeebe:input"
+    },
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "print_awaited",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "String"
+  }, {
+    "id" : "version",
+    "label" : "Version",
+    "description" : "Version of the element template",
+    "value" : "1",
+    "group" : "connector",
+    "binding" : {
+      "key" : "elementTemplateVersion",
+      "type" : "zeebe:taskHeader"
+    },
+    "type" : "Hidden"
+  }, {
+    "id" : "id",
+    "label" : "ID",
+    "description" : "ID of the element template",
+    "value" : "io.greyorange.pickvanillademo.ButlerServer.v1",
+    "group" : "connector",
+    "binding" : {
+      "key" : "elementTemplateId",
+      "type" : "zeebe:taskHeader"
+    },
+    "type" : "Hidden"
+  }, {
+    "id" : "resultVariable",
+    "label" : "Result variable",
+    "description" : "Name of variable to store the response in",
+    "group" : "output",
+    "binding" : {
+      "key" : "resultVariable",
+      "type" : "zeebe:taskHeader"
+    },
+    "type" : "String"
+  }, {
+    "id" : "resultExpression",
+    "label" : "Result expression",
+    "description" : "Expression to map the response into process variables",
+    "feel" : "required",
+    "group" : "output",
+    "binding" : {
+      "key" : "resultExpression",
+      "type" : "zeebe:taskHeader"
+    },
+    "type" : "Text"
+  }, {
+    "id" : "errorExpression",
+    "label" : "Error expression",
+    "description" : "Expression to handle errors. Details in the <a href=\"https://docs.camunda.io/docs/components/connectors/use-connectors/\" target=\"_blank\">documentation</a>.",
+    "feel" : "required",
+    "group" : "error",
+    "binding" : {
+      "key" : "errorExpression",
+      "type" : "zeebe:taskHeader"
+    },
+    "type" : "Text"
+  }, {
+    "id" : "retryCount",
+    "label" : "Retries",
+    "description" : "Number of retries",
+    "value" : "3",
+    "feel" : "optional",
+    "group" : "retries",
+    "binding" : {
+      "property" : "retries",
+      "type" : "zeebe:taskDefinition"
+    },
+    "type" : "String"
+  }, {
+    "id" : "retryBackoff",
+    "label" : "Retry backoff",
+    "description" : "ISO-8601 duration to wait between retries",
+    "value" : "PT0S",
+    "group" : "retries",
+    "binding" : {
+      "key" : "retryBackoff",
+      "type" : "zeebe:taskHeader"
+    },
+    "type" : "String"
+  } ]
+}

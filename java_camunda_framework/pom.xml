@@ -18,6 +18,7 @@
              (no pom.xml of their own — L4/L5 are still in design, not implemented;
              see the L4/L5 slide). Re-add here once they get a pom.xml. -->
         <module>camunda-l1-l3-demo</module>
+        <module>camunda-pick-vanilla-demo</module>
     </modules>
 
     <properties>
@@ -42,6 +43,14 @@
                 <groupId>io.camunda</groupId>
                 <artifactId>spring-zeebe-starter</artifactId>
                 <version>${zeebe.version}</version>
+            </dependency>
+            <!-- Override spring-boot-dependencies' 1.18.30, too old to run its annotation
+                 processor on a JDK this new; without this override, @Getter/@Setter/etc.
+                 silently produce no accessors and every caller fails with "cannot find symbol". -->
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>1.18.42</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

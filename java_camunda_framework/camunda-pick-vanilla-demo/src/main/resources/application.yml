@@ -1,0 +1,45 @@
+spring:
+  application:
+    name: camunda-pick-vanilla-demo
+  datasource:
+    url: jdbc:h2:mem:pick_vanilla_demo;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    open-in-view: false
+  kafka:
+    # Point this at your local Kafka. This consumer group is entirely independent of
+    # whatever group butler_server's own consumers use -- same topic, separate group,
+    # zero interaction with the real HSM's own consumption of it.
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: pick-vanilla-demo
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+# This app IS the Connector Runtime -- spring-boot-starter-camunda-connectors
+# auto-registers every @OutboundConnector/@InboundConnector bean as soon as it's
+# on the classpath. Everything runs as a plain local JVM process (no Docker),
+# so "localhost" here means exactly that -- no host.docker.internal indirection.
+camunda:
+  client:
+    mode: self-managed
+    auth-method: none
+    grpc-address: ${CAMUNDA_GRPC_ADDRESS:grpc://localhost:26500}
+    rest-address: ${CAMUNDA_REST_ADDRESS:http://localhost:8080}
+
+# Base URL of the butler_server instance whose pick_vanilla_demo_http_handler
+# this app calls for every read-only lookup (never a write). butler_server runs
+# on a VM; port-forward it to a LOCAL port other than 8080, which is already
+# Zeebe's own unified REST API above.
+butler-server:
+  base-url: ${BUTLER_SERVER_BASE_URL:http://localhost:8081}
+
+logging:
+  pattern:
+    console: "%d{HH:mm:ss} %-5level [wf=%X{workflowId}] [step=%X{step}] %logger{25} - %msg%n"

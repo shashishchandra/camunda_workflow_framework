@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.greyorange.camunda</groupId>
+        <artifactId>java-camunda-framework</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>camunda-pick-vanilla-demo</artifactId>
+    <packaging>jar</packaging>
+    <name>Demo: Pick-Front Vanilla Flow (custom Camunda Connectors, butler_server is untouched)</name>
+    <description>
+        Camunda 8 diagram that mirrors butler_server's pick_front_hsm vanilla
+        (bin-agent) flow for demo purposes, built entirely on the Camunda
+        Connector SDK's Operations API (@OutboundConnector/@Operation/@Variable
+        for the 8 butler_server-backed nodes, @InboundConnector for the 3
+        Kafka-driven nodes) -- no hand-rolled job-worker layer, no hand-written
+        element templates. This app NEVER interacts with the running HSM: it
+        independently consumes the real rack-arrival Kafka topic butler_server
+        already publishes (a second consumer group, zero butler_server
+        changes), every other step is triggered by hand-published demo-only
+        Kafka messages, and all data comes from a new read-only REST API
+        (pick_vanilla_demo_http_handler) that never writes. See README.md.
+    </description>
+
+    <properties>
+        <!-- Overrides the parent's 3.2.0 for THIS module only, confirmed by
+             extracting connector-runtime-bundle 8.9.12 itself: it's built
+             against Spring Boot 4.1.1 / Spring Framework 7.0.9, not 3.x.
+             Confined to this module's own dependencyManagement below so
+             l1/l2/l3-starter and l1-l3-demo, still on 3.2.0, are untouched. -->
+        <spring-boot.version>4.1.1</spring-boot.version>
+        <camunda-connector.version>8.9.12</camunda-connector.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.greyorange.camunda</groupId>
+            <artifactId>camunda-l1-starter</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.greyorange.camunda</groupId>
+            <artifactId>camunda-l2-starter</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <!-- AbstractOperationConnector, AbstractEventInboundConnector,
+                 MessageSource, KafkaMessageSource: the Connector SDK-based L3
+                 base classes, replacing the old AbstractJobWorker /
+                 KafkaToZeebeMessageBridge pattern (raw Zeebe client, hand-rolled
+                 polling) that this module never used. -->
+            <groupId>com.greyorange.camunda</groupId>
+            <artifactId>camunda-l3-starter</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- The Spring-wiring layer on top of camunda-l3-starter's plain
+             connector-core dependency: auto-registers every
+             @OutboundConnector/@InboundConnector bean as soon as it's on the
+             classpath, and gives us job-worker registration, polling,
+             completion, retries and inbound correlation for free. -->
+        <dependency>
+            <groupId>io.camunda.connector</groupId>
+            <artifactId>spring-boot-starter-camunda-connectors</artifactId>
+            <version>${camunda-connector.version}</version>
+        </dependency>
+        <dependency>
+            <!-- @ElementTemplate / @TemplateProperty are only pulled in by the
+                 generator Maven plugin itself, not by the starter above, so they
+                 need their own explicit compile-scope dependency here. -->
+            <groupId>io.camunda.connector</groupId>
+            <artifactId>element-template-generator-annotations</artifactId>
+            <version>${camunda-connector.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <!-- Just the RestClient library, no embedded servlet container: this app
+                 doesn't expose its own HTTP API, it only calls out to butler_server. -->
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>camunda-pick-vanilla-demo</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <!-- Generates element-templates/*.json from the @OutboundConnector /
+                     @InboundConnector / @Operation / @TemplateProperty annotations
+                     below at build time; nothing under element-templates/ is
+                     hand-written, regenerate by rebuilding, don't hand-edit. -->
+                <groupId>io.camunda.connector</groupId>
+                <artifactId>element-template-generator-maven-plugin</artifactId>
+                <version>${camunda-connector.version}</version>
+                <dependencies>
+                    <!-- The generator reflects over PickVanillaDemoOutboundConnector's
+                         whole class hierarchy, including its superclass
+                         AbstractOperationConnector, which lives in a separate reactor
+                         module. Maven plugins run in their own isolated classloader
+                         that only sees this project's own compiled output plus
+                         whatever's declared here, not other reactor modules
+                         automatically. -->
+                    <dependency>
+                        <groupId>com.greyorange.camunda</groupId>
+                        <artifactId>camunda-l3-starter</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate-templates</goal>
+                        </goals>
+                        <configuration>
+                            <connectors>
+                                <connector>
+                                    <connectorClass>com.greyorange.pickvanillademo.connector.PickVanillaDemoOutboundConnector</connectorClass>
+                                    <files>
+                                        <file>
+                                            <templateId>io.greyorange.pickvanillademo.ButlerServer</templateId>
+                                            <templateFileName>pick-vanilla-demo-butler-server.json</templateFileName>
+                                        </file>
+                                    </files>
+                                </connector>
+                                <connector>
+                                    <connectorClass>com.greyorange.pickvanillademo.connector.RackArrivalInboundConnector</connectorClass>
+                                    <files>
+                                        <file>
+                                            <templateId>io.greyorange.pickvanillademo.RackArrival</templateId>
+                                            <templateFileName>pick-vanilla-demo-rack-arrival.json</templateFileName>
+                                        </file>
+                                    </files>
+                                </connector>
+                                <connector>
+                                    <connectorClass>com.greyorange.pickvanillademo.connector.EntityScanInboundConnector</connectorClass>
+                                    <files>
+                                        <file>
+                                            <templateId>io.greyorange.pickvanillademo.EntityScan</templateId>
+                                            <templateFileName>pick-vanilla-demo-entity-scan.json</templateFileName>
+                                        </file>
+                                    </files>
+                                </connector>
+                                <connector>
+                                    <connectorClass>com.greyorange.pickvanillademo.connector.PickBinConfirmInboundConnector</connectorClass>
+                                    <files>
+                                        <file>
+                                            <templateId>io.greyorange.pickvanillademo.PickBinConfirm</templateId>
+                                            <templateFileName>pick-vanilla-demo-pick-bin-confirm.json</templateFileName>
+                                        </file>
+                                    </files>
+                                </connector>
+                            </connectors>
+                            <!-- Sibling of the BPMN file itself: Modeler auto-discovers a folder
+                                 named element-templates next to (or above) the opened diagram,
+                                 no Settings configuration needed. -->
+                            <outputDirectory>${project.basedir}/src/main/resources/bpmn/element-templates</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <!-- 8.9.12's annotation processor emits BOTH
+                     META-INF/services/io.camunda.connector.api.outbound.OutboundConnectorFunction
+                     and .../OutboundConnectorProvider entries for every @OutboundConnector
+                     class. DefaultOutboundConnectorFactory's constructor already receives
+                     Spring-injected List<OutboundConnectorFunction>/List<OutboundConnectorProvider>
+                     parameters (that's how our bean is correctly discovered), but it ALSO runs
+                     its own raw ServiceLoader.load() scan over both service files regardless,
+                     which finds the same class again and fails trying to instantiate our
+                     constructor-injected Spring bean with a no-arg constructor. Confirmed by
+                     running it: deleting only the Function file just moved the identical crash
+                     to the Provider file. Delete both; the annotation-processor-generated SPI
+                     files are only meaningful for the standalone (non-Spring) connectors-bundle
+                     runtime, not this Spring-hosted one. The identical failure mode also hits
+                     the inbound side (SPIConnectorDiscovery.discoverInbound in
+                     DefaultInboundConnectorFactory's constructor), so that generated file gets
+                     deleted here too. -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>strip-stray-connector-spi</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <delete file="${project.build.outputDirectory}/META-INF/services/io.camunda.connector.api.outbound.OutboundConnectorFunction" />
+                                <delete file="${project.build.outputDirectory}/META-INF/services/io.camunda.connector.api.outbound.OutboundConnectorProvider" />
+                                <delete file="${project.build.outputDirectory}/META-INF/services/io.camunda.connector.api.inbound.InboundConnectorExecutable" />
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

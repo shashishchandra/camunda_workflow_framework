@@ -1,0 +1,13 @@
+# Maven build output
+target/
+
+# macOS Finder metadata
+.DS_Store
+
+# IDE metadata
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.vscode/

@@ -12,12 +12,45 @@
 
     <artifactId>camunda-l3-starter</artifactId>
     <packaging>jar</packaging>
-    <name>L3: Orchestration Layer (Zeebe Job Workers)</name>
+    <name>L3: Orchestration Layer (Zeebe Job Workers + Connector SDK base classes)</name>
+
+    <properties>
+        <!-- connector-core is pure Java plus provided-scope Jackson only (verified
+             against its own pom); it has no Spring dependency at all, so depending on
+             it here does not force this module's consumers onto any particular Spring
+             Boot version. Only camunda-pick-vanilla-demo needs the Boot 4.1.1 override,
+             for the Spring-wiring starter (spring-boot-starter-camunda-connectors); this
+             module only needs the framework-agnostic annotations/interfaces. -->
+        <camunda-connector.version>8.9.12</camunda-connector.version>
+    </properties>
 
     <dependencies>
         <dependency>
+            <groupId>com.greyorange.camunda</groupId>
+            <artifactId>camunda-l2-starter</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>io.camunda</groupId>
             <artifactId>spring-zeebe-starter</artifactId>
+        </dependency>
+        <dependency>
+            <!-- @Operation/@OutboundConnector/@InboundConnector/InboundConnectorExecutable
+                 etc. live here, the SDK's plain annotation/interface layer, not the
+                 Spring wiring layer (spring-boot-starter-camunda-connectors), which stays
+                 out of this module on purpose so it doesn't drag in a Spring Boot version
+                 opinion. -->
+            <groupId>io.camunda.connector</groupId>
+            <artifactId>connector-core</artifactId>
+            <version>${camunda-connector.version}</version>
+        </dependency>
+        <dependency>
+            <!-- Backs KafkaMessageSource, the one concrete MessageSource this module
+                 ships out of the box. An MQ- or HTTP-trigger-backed MessageSource can be
+                 added the same way later without touching AbstractEventInboundConnector. -->
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <version>${kafka.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

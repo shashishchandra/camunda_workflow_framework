@@ -1,0 +1,69 @@
+{
+  "$schema" : "https://unpkg.com/@camunda/zeebe-element-templates-json-schema/resources/schema.json",
+  "name" : "Wait For Pick Bin Confirm (DEMO event) (Start Event)",
+  "id" : "io.greyorange.pickvanillademo.PickBinConfirm.v1:StartEvent",
+  "description" : "Waits for a hand-published DEMO Kafka message simulating a PPTL button press. butler_server never publishes to this topic.",
+  "metadata" : {
+    "keywords" : [ ]
+  },
+  "version" : 1,
+  "category" : {
+    "id" : "connectors",
+    "name" : "Connectors"
+  },
+  "appliesTo" : [ "bpmn:StartEvent" ],
+  "elementType" : {
+    "value" : "bpmn:StartEvent"
+  },
+  "groups" : [ {
+    "id" : "default",
+    "label" : "Properties"
+  }, {
+    "id" : "activation",
+    "label" : "Activation"
+  }, {
+    "id" : "output",
+    "label" : "Output mapping"
+  } ],
+  "properties" : [ {
+    "value" : "io.greyorange.pickvanillademo:pick-bin-confirm:1",
+    "binding" : {
+      "name" : "inbound.type",
+      "type" : "zeebe:property"
+    },
+    "type" : "Hidden"
+  }, {
+    "id" : "activationCondition",
+    "label" : "Activation condition",
+    "description" : "Condition under which the Connector triggers. Leave empty to catch all events",
+    "optional" : true,
+    "feel" : "required",
+    "group" : "activation",
+    "binding" : {
+      "name" : "activationCondition",
+      "type" : "zeebe:property"
+    },
+    "type" : "String"
+  }, {
+    "id" : "resultVariable",
+    "label" : "Result variable",
+    "description" : "Name of variable to store the response in",
+    "group" : "output",
+    "binding" : {
+      "name" : "resultVariable",
+      "type" : "zeebe:property"
+    },
+    "type" : "String"
+  }, {
+    "id" : "resultExpression",
+    "label" : "Result expression",
+    "description" : "Expression to map the response into process variables",
+    "feel" : "required",
+    "group" : "output",
+    "binding" : {
+      "name" : "resultExpression",
+      "type" : "zeebe:property"
+    },
+    "type" : "Text"
+  } ]
+}

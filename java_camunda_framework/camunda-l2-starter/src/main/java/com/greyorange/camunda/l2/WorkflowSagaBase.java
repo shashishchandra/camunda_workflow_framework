@@ -1,27 +1,28 @@
 package com.greyorange.camunda.l2;
 
-import jakarta.persistence.EntityManager;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import jakarta.persistence.EntityManager;
 
 /**
  * L2 Integrity — abstract base for all workflow saga classes.
  *
- * Models the gen_saga:promise contract from the Erlang L2 layer:
+ * Models
  *   1. Rules are evaluated BEFORE the DB transaction opens — violated rules never write.
  *   2. Business commit runs inside the caller's @Transactional boundary.
- *   3. MQ event fires ONLY after DB commit — never on rollback.
+ *   3. MQ event fires ONLY after DB commit — never on rollback - SAGA.
  *   4. Checkpoints are persisted inside the same transaction as the business commit.
  *   5. Rollback hooks run synchronously when the transaction rolls back.
  *
  * DESIGN DECISIONS:
- *   - WorkflowMq replaces KafkaTemplate so the saga is MQ-agnostic.
+ *   - WorkflowMq instead of KafkaTemplate so the saga is MQ-agnostic.
  *   - WorkflowRuleEngine is injected (not created per-call) so it can be mocked in tests.
  *   - EntityManager is injected for checkpoint persistence without requiring a
  *     full repository dependency in child classes.

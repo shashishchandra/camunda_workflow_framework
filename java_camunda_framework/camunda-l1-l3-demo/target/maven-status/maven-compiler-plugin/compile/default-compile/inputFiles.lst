@@ -1,9 +1,0 @@
-/Users/shashish.c/Documents/camunda_workflow_framework/java_camunda_framework/camunda-l1-l3-demo/src/main/java/com/greyorange/demo/DemoApplication.java
-/Users/shashish.c/Documents/camunda_workflow_framework/java_camunda_framework/camunda-l1-l3-demo/src/main/java/com/greyorange/demo/DemoConfig.java
-/Users/shashish.c/Documents/camunda_workflow_framework/java_camunda_framework/camunda-l1-l3-demo/src/main/java/com/greyorange/demo/DemoLoggingMq.java
-/Users/shashish.c/Documents/camunda_workflow_framework/java_camunda_framework/camunda-l1-l3-demo/src/main/java/com/greyorange/demo/MasterPptlPressSaga.java
-/Users/shashish.c/Documents/camunda_workflow_framework/java_camunda_framework/camunda-l1-l3-demo/src/main/java/com/greyorange/demo/MasterPptlPressWorker.java
-/Users/shashish.c/Documents/camunda_workflow_framework/java_camunda_framework/camunda-l1-l3-demo/src/main/java/com/greyorange/demo/RackArrivedSaga.java
-/Users/shashish.c/Documents/camunda_workflow_framework/java_camunda_framework/camunda-l1-l3-demo/src/main/java/com/greyorange/demo/RackArrivedWorker.java
-/Users/shashish.c/Documents/camunda_workflow_framework/java_camunda_framework/camunda-l1-l3-demo/src/main/java/com/greyorange/demo/RackEntity.java
-/Users/shashish.c/Documents/camunda_workflow_framework/java_camunda_framework/camunda-l1-l3-demo/src/main/java/com/greyorange/demo/RackRepository.java
