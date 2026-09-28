@@ -42,7 +42,7 @@
     "id" : "operation",
     "label" : "Operation",
     "description" : "The operation to execute",
-    "value" : "auto_dest_clear",
+    "value" : "any_more_bins_in_batch",
     "group" : "operation",
     "binding" : {
       "key" : "operation",
@@ -50,6 +50,12 @@
     },
     "type" : "Dropdown",
     "choices" : [ {
+      "name" : "Any More Bins In Batch",
+      "value" : "any_more_bins_in_batch"
+    }, {
+      "name" : "Any More Pick Instructions",
+      "value" : "any_more_pick_instructions"
+    }, {
       "name" : "Auto Dest Clear (log only)",
       "value" : "auto_dest_clear"
     }, {
@@ -74,6 +80,40 @@
       "name" : "Wait For Print",
       "value" : "print_awaited"
     } ]
+  }, {
+    "id" : "any_more_bins_in_batch:pps_id",
+    "label" : "Pps_id",
+    "feel" : "optional",
+    "group" : "operation",
+    "binding" : {
+      "name" : "pps_id",
+      "type" : "zeebe:input"
+    },
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "any_more_bins_in_batch",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "String"
+  }, {
+    "id" : "any_more_pick_instructions:pps_id",
+    "label" : "Pps_id",
+    "feel" : "optional",
+    "group" : "operation",
+    "binding" : {
+      "name" : "pps_id",
+      "type" : "zeebe:input"
+    },
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "any_more_pick_instructions",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "String"
   }, {
     "id" : "auto_dest_clear:pps_id",
     "label" : "Pps_id",

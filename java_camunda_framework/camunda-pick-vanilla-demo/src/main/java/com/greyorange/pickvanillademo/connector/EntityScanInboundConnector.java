@@ -4,8 +4,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greyorange.camunda.l3.AbstractEventInboundConnector;
 import com.greyorange.camunda.l3.KafkaMessageSource;
-import com.greyorange.pickvanillademo.PickCyclePhase;
-import com.greyorange.pickvanillademo.PickCycleSaga;
+import com.greyorange.pickvanillademo.PickInstructionPhase;
+import com.greyorange.pickvanillademo.PickInstructionSaga;
 import io.camunda.connector.api.annotation.InboundConnector;
 import io.camunda.connector.api.inbound.CorrelationRequest;
 import io.camunda.connector.api.inbound.InboundConnectorContext;
@@ -39,11 +39,11 @@ public class EntityScanInboundConnector extends AbstractEventInboundConnector {
 
     private static final Logger log = LoggerFactory.getLogger(EntityScanInboundConnector.class);
 
-    private final PickCycleSaga saga;
+    private final PickInstructionSaga saga;
     private final ObjectMapper objectMapper;
 
     public EntityScanInboundConnector(
-        PickCycleSaga saga,
+        PickInstructionSaga saga,
         ObjectMapper objectMapper,
         @Value("${spring.kafka.bootstrap-servers}") String bootstrapServers
     ) {
@@ -65,7 +65,7 @@ public class EntityScanInboundConnector extends AbstractEventInboundConnector {
         }
         String ppsId = String.valueOf(ppsIdField);
         Map<String, Object> sagaVars = saga.advancePhase(
-            ppsId, PickCyclePhase.WAIT_FOR_ENTITY_SCAN, PickCyclePhase.PICKLIST_PROCESSING, "Op_WaitForEntityScan");
+            ppsId, PickInstructionPhase.WAIT_FOR_ENTITY_SCAN, PickInstructionPhase.PICKLIST_PROCESSING, "Op_WaitForEntityScan");
         Map<String, Object> variables = new HashMap<>(payload);
         variables.putAll(sagaVars);
         ctx.correlate(CorrelationRequest.builder().variables(variables).build());

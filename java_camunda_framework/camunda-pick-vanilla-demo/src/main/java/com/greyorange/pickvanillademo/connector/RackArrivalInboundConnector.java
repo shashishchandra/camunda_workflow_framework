@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greyorange.camunda.l3.AbstractEventInboundConnector;
 import com.greyorange.camunda.l3.KafkaMessageSource;
 import com.greyorange.pickvanillademo.PickCycleSaga;
+import com.greyorange.pickvanillademo.PickInstructionSaga;
 import io.camunda.connector.api.annotation.InboundConnector;
 import io.camunda.connector.api.inbound.CorrelationRequest;
 import io.camunda.connector.api.inbound.InboundConnectorContext;
@@ -45,15 +46,18 @@ public class RackArrivalInboundConnector extends AbstractEventInboundConnector {
     private static final Logger log = LoggerFactory.getLogger(RackArrivalInboundConnector.class);
 
     private final PickCycleSaga saga;
+    private final PickInstructionSaga instructionSaga;
     private final ObjectMapper objectMapper;
 
     public RackArrivalInboundConnector(
         PickCycleSaga saga,
+        PickInstructionSaga instructionSaga,
         ObjectMapper objectMapper,
         @Value("${spring.kafka.bootstrap-servers}") String bootstrapServers
     ) {
         super(new KafkaMessageSource(bootstrapServers, "transport_request.workflow.pick.events", "pick-vanilla-demo-rack-arrival"));
         this.saga = saga;
+        this.instructionSaga = instructionSaga;
         this.objectMapper = objectMapper;
     }
 
@@ -75,6 +79,10 @@ public class RackArrivalInboundConnector extends AbstractEventInboundConnector {
         }
         String ppsId = String.valueOf(ppsIdField);
         Map<String, Object> sagaVars = saga.waitForSourceArrival(ppsId);
+        // First outer-loop iteration: the rack just arrived, so the first pick
+        // instruction starts immediately. Later iterations are started by the
+        // "any more pick instructions?" loop-back operation, not here.
+        instructionSaga.startInstruction(ppsId);
         Map<String, Object> variables = new HashMap<>(payload);
         variables.putAll(sagaVars);
         ctx.correlate(CorrelationRequest.builder().variables(variables).build());

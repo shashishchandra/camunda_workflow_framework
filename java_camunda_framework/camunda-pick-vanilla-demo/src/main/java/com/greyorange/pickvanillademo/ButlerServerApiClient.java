@@ -42,6 +42,25 @@ public class ButlerServerApiClient {
         return getBooleanResult("/isDestinationOrchestratedByHtm", ppsId);
     }
 
+    /**
+     * Wraps GET anyMorePickInstructions -- the outer-loop check. Mirrors what
+     * pps_manager actually does on {pickup_done} (re-querying pending pick
+     * instructions/ETRs for the rack), not just an in-memory backlog, so the
+     * answer stays correct across an app restart.
+     */
+    public boolean anyMorePickInstructions(String ppsId) {
+        return getBooleanResult("/anyMorePickInstructions", ppsId);
+    }
+
+    /**
+     * Wraps GET anyMoreBinsInBatch -- the inner-loop check. Whether another PPTL
+     * press is still awaited within the current dispatched batch, before moving
+     * on to print/validate-and-clear.
+     */
+    public boolean anyMoreBinsInBatch(String ppsId) {
+        return getBooleanResult("/anyMoreBinsInBatch", ppsId);
+    }
+
     /** Wraps GET printAwaited (dock_station_info:get_dock_station_id_by_status/2). Empty when none awaited. */
     @SuppressWarnings("unchecked")
     public List<String> printAwaitedDockStationIds(String ppsId) {

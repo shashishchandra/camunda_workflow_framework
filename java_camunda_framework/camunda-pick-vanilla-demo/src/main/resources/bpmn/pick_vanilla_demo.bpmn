@@ -48,6 +48,7 @@
         </zeebe:ioMapping>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:incoming>Flow_42</bpmn:incoming>
       <bpmn:outgoing>Flow_4a</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:serviceTask id="Task_IsFrontToteFlow" name="Is Front Tote Flow (Connector Operation)" zeebe:modelerTemplate="io.greyorange.pickvanillademo.ButlerServer.v1" zeebe:modelerTemplateVersion="1">
@@ -234,10 +235,11 @@
         </zeebe:properties>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_28</bpmn:incoming>
+      <bpmn:incoming>Flow_36</bpmn:incoming>
       <bpmn:outgoing>Flow_29</bpmn:outgoing>
       <bpmn:messageEventDefinition id="Event_WaitForPickBinConfirm_MsgDef" messageRef="Message_WaitForPickBinConfirm" />
     </bpmn:intermediateCatchEvent>
-    <bpmn:serviceTask id="Task_CommitPptlPress" name="Commit PPTL Press -- LOG ONLY (Connector Operation)" zeebe:modelerTemplate="io.greyorange.pickvanillademo.ButlerServer.v1" zeebe:modelerTemplateVersion="1">
+    <bpmn:serviceTask id="Task_CommitPptlPress" name="Commit PPTL Press (Connector Operation)" zeebe:modelerTemplate="io.greyorange.pickvanillademo.ButlerServer.v1" zeebe:modelerTemplateVersion="1">
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="io.greyorange.pickvanillademo:butler-server:1" retries="3" />
         <zeebe:taskHeaders>
@@ -282,24 +284,49 @@
       <bpmn:incoming>Flow_32</bpmn:incoming>
       <bpmn:outgoing>Flow_34</bpmn:outgoing>
     </bpmn:scriptTask>
-    <bpmn:scriptTask id="Task_ValidateAndProcessNext" name="Validate And Process Next (Script -- no butler_server endpoint backs this decision)">
+    <bpmn:serviceTask id="Task_AnyMoreBinsInBatch" name="Any More Bins In Batch? (Connector Operation)" zeebe:modelerTemplate="io.greyorange.pickvanillademo.ButlerServer.v1" zeebe:modelerTemplateVersion="1">
       <bpmn:extensionElements>
-        <zeebe:script expression="={ is_single_pptl_bin: true, phase: &#34;VALIDATE_AND_PROCESS_NEXT&#34; }" resultVariable="validateResult" />
+        <zeebe:taskDefinition type="io.greyorange.pickvanillademo:butler-server:1" retries="3" />
+        <zeebe:taskHeaders>
+          <zeebe:header key="operation" value="any_more_bins_in_batch" />
+          <zeebe:header key="resultExpression" value="={ more_bins_in_batch: response.more_bins_in_batch, phase: response.phase }" />
+        </zeebe:taskHeaders>
         <zeebe:ioMapping>
-          <zeebe:output source="=validateResult.is_single_pptl_bin" target="is_single_pptl_bin" />
-          <zeebe:output source="=validateResult.phase" target="phase" />
+          <zeebe:input source="=pps_id" target="pps_id" />
+          <zeebe:output source="=more_bins_in_batch" target="more_bins_in_batch" />
+          <zeebe:output source="=phase" target="phase" />
         </zeebe:ioMapping>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_33</bpmn:incoming>
       <bpmn:incoming>Flow_34</bpmn:incoming>
       <bpmn:outgoing>Flow_35</bpmn:outgoing>
-    </bpmn:scriptTask>
-    <bpmn:exclusiveGateway id="Gateway_F" name="Single PPTL Bin?" default="Flow_37">
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Gateway_F" name="More Bins In Batch? (Inner Loop)" default="Flow_37">
       <bpmn:incoming>Flow_35</bpmn:incoming>
       <bpmn:outgoing>Flow_36</bpmn:outgoing>
       <bpmn:outgoing>Flow_37</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:serviceTask id="Task_AutoDestClear" name="Auto Dest Clear -- LOG ONLY (Connector Operation)" zeebe:modelerTemplate="io.greyorange.pickvanillademo.ButlerServer.v1" zeebe:modelerTemplateVersion="1">
+    <bpmn:serviceTask id="Task_AnyMorePickInstructions" name="Any More Pick Instructions? (Connector Operation)" zeebe:modelerTemplate="io.greyorange.pickvanillademo.ButlerServer.v1" zeebe:modelerTemplateVersion="1">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="io.greyorange.pickvanillademo:butler-server:1" retries="3" />
+        <zeebe:taskHeaders>
+          <zeebe:header key="operation" value="any_more_pick_instructions" />
+          <zeebe:header key="resultExpression" value="={ more_instructions: response.more_instructions }" />
+        </zeebe:taskHeaders>
+        <zeebe:ioMapping>
+          <zeebe:input source="=pps_id" target="pps_id" />
+          <zeebe:output source="=more_instructions" target="more_instructions" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_37</bpmn:incoming>
+      <bpmn:outgoing>Flow_40</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Gateway_G" name="More Pick Instructions? (Outer Loop)" default="Flow_41">
+      <bpmn:incoming>Flow_40</bpmn:incoming>
+      <bpmn:outgoing>Flow_41</bpmn:outgoing>
+      <bpmn:outgoing>Flow_42</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="Task_AutoDestClear" name="Auto Dest Clear (Connector Operation)" zeebe:modelerTemplate="io.greyorange.pickvanillademo.ButlerServer.v1" zeebe:modelerTemplateVersion="1">
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="io.greyorange.pickvanillademo:butler-server:1" retries="3" />
         <zeebe:taskHeaders>
@@ -313,10 +340,10 @@
           <zeebe:output source="=phase" target="phase" />
         </zeebe:ioMapping>
       </bpmn:extensionElements>
-      <bpmn:incoming>Flow_36</bpmn:incoming>
+      <bpmn:incoming>Flow_41</bpmn:incoming>
       <bpmn:outgoing>Flow_38</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:serviceTask id="Task_RackReleased" name="Rack Released -- LOG ONLY (Connector Operation)" zeebe:modelerTemplate="io.greyorange.pickvanillademo.ButlerServer.v1" zeebe:modelerTemplateVersion="1">
+    <bpmn:serviceTask id="Task_RackReleased" name="Rack Released (Connector Operation)" zeebe:modelerTemplate="io.greyorange.pickvanillademo.ButlerServer.v1" zeebe:modelerTemplateVersion="1">
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="io.greyorange.pickvanillademo:butler-server:1" retries="3" />
         <zeebe:taskHeaders>
@@ -337,9 +364,6 @@
     </bpmn:endEvent>
     <bpmn:endEvent id="EndEvent_NotVanillaPath" name="Not Pick Possible (todo...)">
       <bpmn:incoming>Flow_15</bpmn:incoming>
-    </bpmn:endEvent>
-    <bpmn:endEvent id="EndEvent_MultiBinLoop" name="Multi-Bin Loop (out of scope)">
-      <bpmn:incoming>Flow_37</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_RackArrival" targetRef="Task_WaitingForCarrierValidation" />
     <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_WaitingForCarrierValidation" targetRef="Task_WaitForWorkAllocation" />
@@ -386,15 +410,20 @@
     <bpmn:sequenceFlow id="Flow_32" sourceRef="Gateway_E" targetRef="Task_WaitForPrintoutConfirm">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=print_awaited</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Flow_33" sourceRef="Gateway_E" targetRef="Task_ValidateAndProcessNext" />
-    <bpmn:sequenceFlow id="Flow_34" sourceRef="Task_WaitForPrintoutConfirm" targetRef="Task_ValidateAndProcessNext" />
-    <bpmn:sequenceFlow id="Flow_35" sourceRef="Task_ValidateAndProcessNext" targetRef="Gateway_F" />
-    <bpmn:sequenceFlow id="Flow_36" sourceRef="Gateway_F" targetRef="Task_AutoDestClear">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=is_single_pptl_bin</bpmn:conditionExpression>
+    <bpmn:sequenceFlow id="Flow_33" sourceRef="Gateway_E" targetRef="Task_AnyMoreBinsInBatch" />
+    <bpmn:sequenceFlow id="Flow_34" sourceRef="Task_WaitForPrintoutConfirm" targetRef="Task_AnyMoreBinsInBatch" />
+    <bpmn:sequenceFlow id="Flow_35" sourceRef="Task_AnyMoreBinsInBatch" targetRef="Gateway_F" />
+    <bpmn:sequenceFlow id="Flow_36" sourceRef="Gateway_F" targetRef="Event_WaitForPickBinConfirm">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=more_bins_in_batch</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Flow_37" sourceRef="Gateway_F" targetRef="EndEvent_MultiBinLoop" />
+    <bpmn:sequenceFlow id="Flow_37" sourceRef="Gateway_F" targetRef="Task_AnyMorePickInstructions" />
     <bpmn:sequenceFlow id="Flow_38" sourceRef="Task_AutoDestClear" targetRef="Task_RackReleased" />
     <bpmn:sequenceFlow id="Flow_39" sourceRef="Task_RackReleased" targetRef="EndEvent_CycleComplete" />
+    <bpmn:sequenceFlow id="Flow_40" sourceRef="Task_AnyMorePickInstructions" targetRef="Gateway_G" />
+    <bpmn:sequenceFlow id="Flow_41" sourceRef="Gateway_G" targetRef="Task_AutoDestClear" />
+    <bpmn:sequenceFlow id="Flow_42" sourceRef="Gateway_G" targetRef="Task_HasClearableFrontBin">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=more_instructions</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="pick_vanilla_demo">
@@ -464,6 +493,12 @@
         <dc:Bounds x="3180" y="220" width="110" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_D_di" bpmnElement="Gateway_D" isMarkerVisible="true">
+        <dc:Bounds x="3345" y="233" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="3334" y="283" width="73" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Task_EarlyDisplayItemScan_di" bpmnElement="Task_EarlyDisplayItemScan">
         <dc:Bounds x="3570" y="80" width="120" height="80" />
       </bpmndi:BPMNShape>
@@ -493,6 +528,7 @@
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Task_CommitPptlPress_di" bpmnElement="Task_CommitPptlPress">
         <dc:Bounds x="4530" y="220" width="130" height="80" />
+        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Task_WaitForPrint_di" bpmnElement="Task_WaitForPrint">
         <dc:Bounds x="4750" y="220" width="120" height="80" />
@@ -506,20 +542,25 @@
       <bpmndi:BPMNShape id="Task_WaitForPrintoutConfirm_di" bpmnElement="Task_WaitForPrintoutConfirm">
         <dc:Bounds x="5150" y="80" width="130" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_ValidateAndProcessNext_di" bpmnElement="Task_ValidateAndProcessNext">
+      <bpmndi:BPMNShape id="Task_AnyMoreBinsInBatch_di" bpmnElement="Task_AnyMoreBinsInBatch">
         <dc:Bounds x="5350" y="220" width="130" height="80" />
+        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_F_di" bpmnElement="Gateway_F" isMarkerVisible="true">
         <dc:Bounds x="5560" y="235" width="50" height="50" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="5542" y="285" width="87" height="14" />
+          <dc:Bounds x="5542" y="150" width="87" height="40" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_AutoDestClear_di" bpmnElement="Task_AutoDestClear">
-        <dc:Bounds x="5750" y="140" width="130" height="80" />
+      <bpmndi:BPMNShape id="Task_AnyMorePickInstructions_di" bpmnElement="Task_AnyMorePickInstructions">
+        <dc:Bounds x="5750" y="360" width="140" height="80" />
+        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_RackReleased_di" bpmnElement="Task_RackReleased">
-        <dc:Bounds x="5960" y="140" width="130" height="80" />
+      <bpmndi:BPMNShape id="Gateway_G_di" bpmnElement="Gateway_G" isMarkerVisible="true">
+        <dc:Bounds x="5960" y="380" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="5942" y="440" width="87" height="40" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="EndEvent_CycleComplete_di" bpmnElement="EndEvent_CycleComplete">
         <dc:Bounds x="6170" y="162" width="36" height="36" />
@@ -533,17 +574,13 @@
           <dc:Bounds x="2560" y="401" width="86" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="EndEvent_MultiBinLoop_di" bpmnElement="EndEvent_MultiBinLoop">
-        <dc:Bounds x="5750" y="360" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="5735" y="401" width="71" height="27" />
-        </bpmndi:BPMNLabel>
+      <bpmndi:BPMNShape id="Task_RackReleased_di" bpmnElement="Task_RackReleased">
+        <dc:Bounds x="5960" y="40" width="130" height="80" />
+        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_D_di" bpmnElement="Gateway_D" isMarkerVisible="true">
-        <dc:Bounds x="3345" y="233" width="50" height="50" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="3334" y="283" width="73" height="14" />
-        </bpmndi:BPMNLabel>
+      <bpmndi:BPMNShape id="Task_AutoDestClear_di" bpmnElement="Task_AutoDestClear">
+        <dc:Bounds x="5725" y="120" width="130" height="80" />
+        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
         <di:waypoint x="186" y="258" />
@@ -705,22 +742,45 @@
         <di:waypoint x="5560" y="260" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_36_di" bpmnElement="Flow_36">
-        <di:waypoint x="5585" y="235" />
-        <di:waypoint x="5585" y="180" />
-        <di:waypoint x="5750" y="180" />
+        <di:waypoint x="5585" y="285" />
+        <di:waypoint x="5585" y="700" />
+        <di:waypoint x="4418" y="700" />
+        <di:waypoint x="4418" y="278" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_37_di" bpmnElement="Flow_37">
-        <di:waypoint x="5585" y="285" />
-        <di:waypoint x="5585" y="378" />
-        <di:waypoint x="5750" y="378" />
+        <di:waypoint x="5610" y="260" />
+        <di:waypoint x="5700" y="260" />
+        <di:waypoint x="5700" y="400" />
+        <di:waypoint x="5750" y="400" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_38_di" bpmnElement="Flow_38">
-        <di:waypoint x="5880" y="180" />
-        <di:waypoint x="5960" y="180" />
+        <di:waypoint x="5855" y="160" />
+        <di:waypoint x="5920" y="160" />
+        <di:waypoint x="5920" y="80" />
+        <di:waypoint x="5960" y="80" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_39_di" bpmnElement="Flow_39">
-        <di:waypoint x="6090" y="180" />
+        <di:waypoint x="6090" y="80" />
+        <di:waypoint x="6130" y="80" />
+        <di:waypoint x="6130" y="180" />
         <di:waypoint x="6170" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_40_di" bpmnElement="Flow_40">
+        <di:waypoint x="5890" y="400" />
+        <di:waypoint x="5960" y="405" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_41_di" bpmnElement="Flow_41">
+        <di:waypoint x="5970" y="395" />
+        <di:waypoint x="5970" y="300" />
+        <di:waypoint x="5790" y="300" />
+        <di:waypoint x="5790" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_42_di" bpmnElement="Flow_42">
+        <di:waypoint x="6010" y="405" />
+        <di:waypoint x="6040" y="405" />
+        <di:waypoint x="6040" y="640" />
+        <di:waypoint x="785" y="640" />
+        <di:waypoint x="785" y="300" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

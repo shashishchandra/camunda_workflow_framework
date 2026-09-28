@@ -60,7 +60,12 @@ public class PickCycleSaga extends WorkflowSagaBase {
         ppsId -> ppsId != null && !ppsId.isBlank()
     );
 
-    /** Creates (or resets, on redelivery) the pick cycle row for ppsId at WAIT_FOR_SOURCE_ARRIVAL. */
+    /**
+     * Creates (or resets, on redelivery) the pick cycle row for ppsId, observes the rack
+     * arrival, and immediately enters PROCESSING_PICKLIST -- the rack stays in that one
+     * phase for the entire duration of the outer loop, however many pick instructions
+     * (each its own PickInstructionEntity, see PickInstructionSaga) that takes.
+     */
     @Transactional
     public Map<String, Object> waitForSourceArrival(String ppsId) {
         return runSaga(
@@ -73,6 +78,7 @@ public class PickCycleSaga extends WorkflowSagaBase {
                 cycle.setDalSource(DalSource.KAFKA);
                 cycle.setStatus(WorkflowStatus.IN_PROGRESS);
                 advancePhase(cycle, PickCyclePhase.WAIT_FOR_SOURCE_ARRIVAL);
+                advancePhase(cycle, PickCyclePhase.PROCESSING_PICKLIST);
                 cycles.save(cycle);
                 return Map.of("pps_id", ppsId, "phase", cycle.getCurrentPhase().name());
             },
